@@ -1,0 +1,22 @@
+{
+  "name": "Network Applications & Security - Lab Report: Reconnaissance & Vulnerability Scanning Lab",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y nmap whois dnsutils git perl nikto smbclient rpcbind samba-common-bin net-tools && sudo ln -sf /usr/bin/python3 /usr/local/bin/python",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "ms-vscode.makefile-tools",
+        "eamodio.gitlens",
+        "oderwat.indent-rainbow"
+      ]
+    }
+  }
+}
