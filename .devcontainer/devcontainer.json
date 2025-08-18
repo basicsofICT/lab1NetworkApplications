@@ -2,7 +2,7 @@
   "name": "Network Applications & Security - Lab Report: Reconnaissance & Vulnerability Scanning Lab",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
-  "workspaceFolder": "/workspaces/security-lab",
+  "workspaceFolder": "/workspaces/lab1NetworkApplications",
   "forwardPorts": [3000, 8080, 1445],
   "postCreateCommand": "sudo apt-get update && sudo apt-get install -y whois dnsutils nmap nikto smbclient jq && chmod +x scripts/*.sh || true",
   "customizations": {

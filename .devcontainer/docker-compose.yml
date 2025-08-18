@@ -1,28 +1,29 @@
-version: "3.8"
-
 services:
+  # Main dev container where you run scripts
   app:
     image: mcr.microsoft.com/devcontainers/base:ubuntu
     volumes:
-      - ..:/workspaces/security-lab
-    # Ensure the workspace user can run package installs
+      - ..:/workspaces/lab1NetworkApplications
     init: true
+    # Give the dev container a little time before sidecars
+    depends_on:
+      - juice-shop
+      - httpbin
+      - smb
 
-  # Sidecar: Juice Shop (intentionally vulnerable web app) on 3000
+  # Sidecar: Juice Shop (intentionally vulnerable web app) on :3000
   juice-shop:
-    image: bkimminich/juice-shop
-    ports:
-      - "3000:3000"
+    image: ghcr.io/bkimminich/juice-shop:latest   # use GHCR (fewer pull hiccups)
+    ports: ["3000:3000"]
     restart: unless-stopped
 
-  # Sidecar: httpbin (HTTP echo service) on 8080
+  # Sidecar: httpbin on :8080
   httpbin:
     image: kennethreitz/httpbin
-    ports:
-      - "8080:80"
+    ports: ["8080:80"]
     restart: unless-stopped
 
-  # Sidecar: Samba server. Map to host port 1445 (avoid privileged 445).
+  # Sidecar: Samba; map container 445 to host 1445 (avoid privileged 445)
   smb:
     image: dperson/samba
     command: >
