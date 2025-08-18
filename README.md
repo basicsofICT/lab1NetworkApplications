@@ -79,7 +79,7 @@ Everything runs in your **GitHub Codespace**, with all tools and test services p
 - **Httpbin (8080)**
     - Simple HTTP echo server. → Target for port/service scanning.
 
-- **Samba SMB (445)**
+- **Samba SMB (1445)**
     - Lightweight SMB server with a public share containing readme.txt. → Target for enumeration practice.
 
 ## Lab Tasks (Total: 15 Points)

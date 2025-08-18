@@ -6,9 +6,9 @@ if [[ -z "$url" ]]; then
   exit 1
 fi
 
-# Hard guard: only allow localhost / loopback targets to avoid mistakes.
+# Only allow loopback targets
 if ! echo "$url" | grep -Eq '^https?://(127\.0\.0\.1|localhost|0\.0\.0\.0|::1)(:|/|$)'; then
-  echo "Refusing to scan non-local targets. Point at http://127.0.0.1:PORT"
+  echo "Refusing to scan non-local targets. Use http://127.0.0.1:PORT"
   exit 2
 fi
 

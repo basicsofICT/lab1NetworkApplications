@@ -22,7 +22,7 @@ for p in 80 443 3000 8080; do
   fi
 done
 
-# SMB (non-standard port in Codespaces)
+# SMB (non-standard port in this lab)
 if nc -z -w2 "$target" 1445 2>/dev/null; then
-  echo -e "\n-- SMB detected on $target:1445 (mapped from 445). Use enumerate_smb.sh to list shares."
+  echo -e "\n-- SMB detected on $target:1445 (remapped from 445). Use enumerate_smb.sh to list shares."
 fi
