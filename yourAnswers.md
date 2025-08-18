@@ -4,7 +4,7 @@ Your Full Name: ___________________
 Date: ___________________
 ---
 
-## 1️⃣ Domain Footprinting – recon_dns.sh (3 pts)
+## 1️⃣ Domain Footprinting – recon_dns.sh (4 pts)
 
 **List commands that you have  used:**
 
@@ -32,7 +32,7 @@ Date: ___________________
 
 ---
 
-## 2️⃣ Network Scanning – scan_web.sh (4 pts)
+## 2️⃣ Network Scanning – scan_web.sh (6 pts)
 **List commands that you have  used:**
 
 
@@ -48,27 +48,11 @@ The following table is an example. You are required to replace the port number. 
 | 445  | SMB     | Samba 4.15             |
 
 
+**Briefly  explain in your own words what the above finding from this task means for an attacker/defender.**
 
 
 
-## 3️⃣ SMB Enumeration – enumerate_smb.sh (4 pts)
-**List commands that you have  used:**
-
-
-**Findings :**
-
-**Findings:**
-- Discovered share(s):  
-- File(s) listed in the share:  
-
-**File contents (example: readme.txt):**
-
-**Why having a public/guest-accessible share be a security issue?** Answer a couple of point sin your own words. 
-
-
-
-
-## 4️⃣ Web Vulnerability Scanning – vuln_scan.sh (4 pts)
+## 3️⃣ Web Vulnerability Scanning – vuln_scan.sh (5 pts)
 
 **List commands that you have  used:**
 

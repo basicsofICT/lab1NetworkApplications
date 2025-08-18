@@ -1,18 +1,12 @@
 {
-  "name": "Network Applications & Security - Lab Report: Reconnaissance & Vulnerability Scanning Lab",
+"name": "Network Applications & Security - Lab Report: Reconnaissance & Vulnerability Scanning Lab",
 "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
-  "forwardPorts": [3000, 8080, 1445],
+  "forwardPorts": [3000, 8080],
 
-  "remoteEnv": {
-    // Ensure user-local bins (e.g., pip --user) are on PATH if you add them later
-    "PATH": "${containerEnv:PATH}:/home/vscode/.local/bin"
-  },
+  "postCreateCommand": "bash -lc 'set -euxo pipefail; export DEBIAN_FRONTEND=noninteractive; sudo apt-get update -y; sudo apt-get install -y python3 python3-venv python3-pip curl netcat-traditional whois dnsutils nmap nikto jq; chmod +x .devcontainer/*.sh || true; chmod +x scripts/*.sh || true'",
 
-  "postCreateCommand": "bash -lc 'set -euxo pipefail; export DEBIAN_FRONTEND=noninteractive; sudo apt-get update -y; sudo apt-get install -y python3 python3-venv python3-pip samba smbclient curl netcat-traditional whois dnsutils nmap nikto jq; mkdir -p shares/public .devcontainer; [ -f shares/public/readme.txt ] || echo \"Hello from the SMB share!\" > shares/public/readme.txt; chmod +x .devcontainer/*.sh || true; chmod +x scripts/*.sh || true; testparm -s >/dev/null || true; smbd --version || true'",
-
-  // Runs after the container starts AND the workspace is mounted in the editor
   "postAttachCommand": "bash .devcontainer/start-services.sh",
 
   "customizations": {
