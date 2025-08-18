@@ -83,7 +83,7 @@ chmod +x scripts/*.sh
 **Goal: Identify open ports/services and probe HTTP(S).**
 
 ```bash
-./scripts/scan_web.sh <target-host-or-ip>
+sudo ./scripts/scan_web.sh <target-host-or-ip>
 ```
 >> ***Use only authorized/test targets. For practice, use a host you own or the one in this codespace environment***
 
@@ -97,8 +97,8 @@ chmod +x scripts/*.sh
 **Goal: Perform a light nikto scan against an authorized test web app.**
 
 ```bash
-./scripts/vuln_scan.sh http://127.0.0.1:3000
-./scripts/vuln_scan.sh http://127.0.0.1:8080
+sudo ./scripts/vuln_scan.sh http://127.0.0.1:3000
+sudo ./scripts/vuln_scan.sh http://127.0.0.1:8080
 ```
 
 - Run against http://127.0.0.1:3000
