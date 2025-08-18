@@ -82,4 +82,4 @@ Write 1–2 sentences about what these results show and why running a web vulner
 2. Copy the URL of your GitHub repository (e.g., https://github.com/<org-or-user>/<repo>)
 
 3. Open Canvas and paste the repo URL in the submission field.
-4. You will get 2 points for creating the codespace and attempting this task.
+4. You will get **2 points** for creating the codespace and attempting this task.
