@@ -4,7 +4,7 @@ Your Full Name: ___________________
 Date: ___________________
 ---
 
-## 1️⃣ Domain Footprinting – recon_dns.sh (4 pts)
+## 1️⃣ Domain Footprinting – recon_dns.sh (2 pts)
 
 **List commands that you have  used:**
 
@@ -32,7 +32,7 @@ Date: ___________________
 
 ---
 
-## 2️⃣ Network Scanning – scan_web.sh (6 pts)
+## 2️⃣ Network Scanning – scan_web.sh (3 pts)
 **List commands that you have  used:**
 
 
@@ -52,7 +52,7 @@ The following table is an example. You are required to replace the port number. 
 
 
 
-## 3️⃣ Web Vulnerability Scanning – vuln_scan.sh (5 pts)
+## 3️⃣ Web Vulnerability Scanning – vuln_scan.sh (3 pts)
 
 **List commands that you have  used:**
 
@@ -82,3 +82,4 @@ Write 1–2 sentences about what these results show and why running a web vulner
 2. Copy the URL of your GitHub repository (e.g., https://github.com/<org-or-user>/<repo>)
 
 3. Open Canvas and paste the repo URL in the submission field.
+4. You will get 2 points for creating the codespace and attempting this task.
