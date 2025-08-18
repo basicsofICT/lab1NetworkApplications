@@ -126,6 +126,7 @@ chmod +x scripts/*.sh
 
 ```bash
 ./scripts/enumerate_smb.sh <target-ip>  
+./scripts/enumerate_smb.sh 127.0.0.1 1445 
 ```
 - Enumerate the public share.
 
@@ -137,7 +138,8 @@ chmod +x scripts/*.sh
 **Goal: Perform a light nikto scan against an authorized test web app.**
 
 ```bash
-./scripts/vuln_scan.sh http://127.0.0.1:8080 
+./scripts/vuln_scan.sh http://127.0.0.1:3000
+./scripts/vuln_scan.sh http://127.0.0.1:8080
 ```
 
 - Run against http://127.0.0.1:3000

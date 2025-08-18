@@ -1,10 +1,13 @@
 {
-  "build": { "dockerfile": "Dockerfile" },
-  "features": {},
-  "forwardPorts": [3000, 8080, 445],
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y whois dnsutils nmap nikto smbclient jq",
-  "postStartCommand": "docker compose up -d",
+  "name": "Network Applications & Security - Lab Report: Reconnaissance & Vulnerability Scanning Lab",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/security-lab",
+  "forwardPorts": [3000, 8080, 1445],
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y whois dnsutils nmap nikto smbclient jq && chmod +x scripts/*.sh || true",
   "customizations": {
-    "vscode": { "extensions": ["ms-vscode.remote-repositories"] }
+    "vscode": {
+      "extensions": ["ms-vscode.remote-repositories"]
+    }
   }
 }

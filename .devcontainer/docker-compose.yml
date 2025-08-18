@@ -1,14 +1,28 @@
+version: "3.8"
+
 services:
-  webapp:
-    image: bkimminich/juice-shop   # intentionally vulnerable web app for learning
-    ports: ["3000:3000"]
+  app:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    volumes:
+      - ..:/workspaces/security-lab
+    # Ensure the workspace user can run package installs
+    init: true
+
+  # Sidecar: Juice Shop (intentionally vulnerable web app) on 3000
+  juice-shop:
+    image: bkimminich/juice-shop
+    ports:
+      - "3000:3000"
     restart: unless-stopped
 
+  # Sidecar: httpbin (HTTP echo service) on 8080
   httpbin:
     image: kennethreitz/httpbin
-    ports: ["8080:80"]
+    ports:
+      - "8080:80"
     restart: unless-stopped
 
+  # Sidecar: Samba server. Map to host port 1445 (avoid privileged 445).
   smb:
     image: dperson/samba
     command: >
@@ -18,7 +32,7 @@ services:
     environment:
       - TZ=UTC
     volumes:
-      - ./shares/public:/shares/public
+      - ../shares/public:/shares/public
     ports:
-      - "445:445"
+      - "1445:445"
     restart: unless-stopped
