@@ -1,16 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-target="${1:-}"
-if [[ -z "$target" ]]; then
-  echo "Usage: $0 <target-ip>"
-  exit 1
-fi
+ip="${1:-}"
+if [[ -z "$ip" ]]; then echo "Usage: $0 <target-ip>"; exit 1; fi
 
-echo "=== NetBIOS name lookup ==="
-nmblookup -A "$target" || true
-echo
-echo "=== SMB shares (guest/anonymous) ==="
-smbclient -L "//$target/" -N || true
-echo
-echo "=== Try basic RPC info (no creds) ==="
-echo "srvinfo" | rpcclient -U "" -N "$target" || true
+echo "== SMB Shares (guest/anonymous) =="
+smbclient -L "//$ip" -N -g || echo "Guest listing failed (expected if disabled)."
+
+echo -e "\n== Try listing 'public' share (guest) =="
+smbclient "//${ip}/public" -N -c "ls; quit" || echo "Could not access public share."

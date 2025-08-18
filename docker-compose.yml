@@ -1,0 +1,24 @@
+services:
+  webapp:
+    image: bkimminich/juice-shop   # intentionally vulnerable web app for learning
+    ports: ["3000:3000"]
+    restart: unless-stopped
+
+  httpbin:
+    image: kennethreitz/httpbin
+    ports: ["8080:80"]
+    restart: unless-stopped
+
+  smb:
+    image: dperson/samba
+    command: >
+      -p
+      -s "public;/shares/public;yes;no;yes"
+      -u "guest;guest"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./shares/public:/shares/public
+    ports:
+      - "445:445"
+    restart: unless-stopped
