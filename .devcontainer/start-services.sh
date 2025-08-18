@@ -1,45 +1,59 @@
 #!/usr/bin/env bash
+# Minimal, robust service launcher for Codespaces (no Docker).
+# Starts:
+#   - Simple HTTP server on :3000  (python http.server)
+#   - Simple HTTP server on :8080  (python http.server)
+#   - smbd on :1445 (guest-readable 'public' share)
+# Requires (install once if missing):
+#   sudo apt-get update && sudo apt-get install -y python3 samba smbclient curl netcat-traditional
+
 set -euo pipefail
 
-# Resolve workspace path robustly
-WS="/workspaces/${localWorkspaceFolderBasename:-$(basename $(pwd))}"
-if [ ! -d "$WS" ]; then
-  WS="/workspaces/$(basename $(pwd))"
-fi
+# ---- Workspace & dirs ----
+WS="/workspaces/${localWorkspaceFolderBasename:-$(basename "$(pwd)")}"
+[ -d "$WS" ] || WS="/workspaces/$(basename "$(pwd)")"
 
 LOG="$WS/.logs"
 SMB_DIR="$WS/.smb"
-mkdir -p "$LOG" "$SMB_DIR"/{cache,logs,lib,run}
-mkdir -p "$WS/shares/public"
+mkdir -p "$LOG" "$WS/shares/public" "$SMB_DIR"/{logs,run,locks,state,cache}
+
+# Ensure share has a file
 [ -f "$WS/shares/public/readme.txt" ] || echo "Hello from the SMB share!" > "$WS/shares/public/readme.txt"
 
-echo "[start-services] Using workspace: $WS"
+echo "[start-services] Workspace: $WS"
+echo "[start-services] Logs in: $LOG/"
 
-# --- Start Juice Shop on :3000 ---
-if ! pgrep -f "juice-shop --port 3000" >/dev/null 2>&1; then
-  echo "[start-services] Starting Juice Shop..."
-  nohup bash -lc "juice-shop --port 3000" >"$LOG/juice-shop.out" 2>&1 &
+# ---- HTTP on :3000 (simple) ----
+if ! ss -ltn | awk '{print $4}' | grep -q ':3000$'; then
+  echo "[start-services] Starting python http.server on :3000 ..."
+  nohup bash -lc "cd \"$WS\" && python3 -m http.server 3000 --bind 0.0.0.0" >"$LOG/http-3000.out" 2>&1 &
 else
-  echo "[start-services] Juice Shop already running."
+  echo "[start-services] :3000 already listening."
 fi
 
-# --- Start httpbin on :8080 ---
-if ! pgrep -f "gunicorn httpbin:app -b 0.0.0.0:8080" >/dev/null 2>&1; then
-  echo "[start-services] Starting httpbin..."
-  nohup bash -lc "python3 -m gunicorn httpbin:app -b 0.0.0.0:8080 --workers 2" >"$LOG/httpbin.out" 2>&1 &
+# ---- HTTP on :8080 (simple) ----
+if ! ss -ltn | awk '{print $4}' | grep -q ':8080$'; then
+  echo "[start-services] Starting python http.server on :8080 ..."
+  nohup bash -lc "cd \"$WS\" && python3 -m http.server 8080 --bind 0.0.0.0" >"$LOG/http-8080.out" 2>&1 &
 else
-  echo "[start-services] httpbin already running."
+  echo "[start-services] :8080 already listening."
 fi
 
-# --- Samba config on :1445 (unprivileged) ---
+# ---- Samba config for :1445 (all paths inside workspace) ----
 cat > "$SMB_DIR/smb.conf" <<CONF
 [global]
    workgroup = WORKGROUP
    server role = standalone server
    map to guest = Bad User
-   logging = file
-   log file = $SMB_DIR/logs/smbd.log
-   max log size = 50
+
+   # keep all Samba state/logs inside the workspace
+   log file = $SMB_DIR/logs/samba.log
+   pid directory = $SMB_DIR/run
+   lock directory = $SMB_DIR/locks
+   state directory = $SMB_DIR/state
+   cache directory = $SMB_DIR/cache
+
+   # listen on unprivileged port (Codespaces-safe)
    smb ports = 1445
 
 [public]
@@ -49,12 +63,32 @@ cat > "$SMB_DIR/smb.conf" <<CONF
    guest ok = yes
 CONF
 
-# Start smbd on 1445 if not running
+# ---- Start smbd on :1445 ----
 if ! ss -ltn | awk '{print $4}' | grep -q ':1445$'; then
-  echo "[start-services] Starting smbd on 1445..."
-  nohup bash -lc "smbd --foreground --no-process-group --configfile=$SMB_DIR/smb.conf --piddir=$SMB_DIR/run --cachedir=$SMB_DIR/cache --state-directory=$SMB_DIR/lib --lock-directory=$SMB_DIR/lib" >"$LOG/smbd.out" 2>&1 &
+  echo "[start-services] Starting smbd on :1445 ..."
+  # -F foreground (nohup backgrounds it), -s config, -l log dir
+  nohup smbd -F -s "$SMB_DIR/smb.conf" -l "$SMB_DIR/logs" >"$LOG/smbd.out" 2>&1 &
 else
-  echo "[start-services] smbd appears to be listening on 1445."
+  echo "[start-services] smbd already listening on :1445."
 fi
 
-echo "[start-services] Launched. Logs in $LOG/"
+# ---- Summarize ----
+sleep 2
+echo
+echo "[start-services] Status:"
+for port in 3000 8080 1445; do
+  if ss -ltn | awk '{print $4}' | grep -q ":$port$"; then
+    echo "  ✓ Port $port is listening"
+  else
+    echo "  ✗ Port $port not listening (check $LOG/*.out)"
+  fi
+done
+
+echo
+echo "[start-services] Quick checks:"
+( curl -sI http://127.0.0.1:3000 | sed -n '1,2p' ) || true
+( curl -sI http://127.0.0.1:8080 | sed -n '1,2p' ) || true
+( smbclient -L //127.0.0.1 -N -p 1445 | sed -n '1,20p' ) || true
+
+echo
+echo "[start-services] Done."
