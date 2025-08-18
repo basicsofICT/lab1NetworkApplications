@@ -3,11 +3,10 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "forwardPorts": [3000, 8080, 1445],
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y whois dnsutils nmap nikto smbclient samba jq curl netcat-traditional python3-pip npm && sudo npm -g install pm2 @juice-shop/juice-shop && pip3 install --user httpbin gunicorn && chmod +x start-services.sh && chmod +x scripts/*.sh || true",
-  "postStartCommand": "bash .devcontainer/start-services.sh",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y whois dnsutils nmap nikto smbclient samba jq curl netcat-traditional python3-pip npm && sudo npm -g install @juice-shop/juice-shop pm2 && python3 -m pip install --user httpbin gunicorn && chmod +x .devcontainer/*.sh || true",
+  "postStartCommand": "bash .devcontainer/bootstrap.sh",
+  "postAttachCommand": "bash .devcontainer/start-services.sh",
   "customizations": {
-    "vscode": {
-      "extensions": ["ms-vscode.remote-repositories"]
-    }
+    "vscode": { "extensions": ["ms-vscode.remote-repositories"] }
   }
 }

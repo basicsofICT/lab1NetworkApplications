@@ -1,53 +1,60 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORKDIR="${WORKDIR:-/workspaces/$(basename "$(pwd)")}"
-
-# Ensure share and sample file exist
-mkdir -p "$WORKDIR/shares/public"
-if [ ! -f "$WORKDIR/shares/public/readme.txt" ]; then
-  echo "Hello from the SMB share!" > "$WORKDIR/shares/public/readme.txt"
+# Resolve workspace path robustly
+WS="/workspaces/${localWorkspaceFolderBasename:-$(basename $(pwd))}"
+if [ ! -d "$WS" ]; then
+  WS="/workspaces/$(basename $(pwd))"
 fi
 
-# Start Juice Shop (:3000) via pm2
-if ! pm2 list | grep -q "juice-shop"; then
-  pm2 start "juice-shop --port 3000" --name juice-shop
+LOG="$WS/.logs"
+SMB_DIR="$WS/.smb"
+mkdir -p "$LOG" "$SMB_DIR"/{cache,logs,lib,run}
+mkdir -p "$WS/shares/public"
+[ -f "$WS/shares/public/readme.txt" ] || echo "Hello from the SMB share!" > "$WS/shares/public/readme.txt"
+
+echo "[start-services] Using workspace: $WS"
+
+# --- Start Juice Shop on :3000 ---
+if ! pgrep -f "juice-shop --port 3000" >/dev/null 2>&1; then
+  echo "[start-services] Starting Juice Shop..."
+  nohup bash -lc "juice-shop --port 3000" >"$LOG/juice-shop.out" 2>&1 &
+else
+  echo "[start-services] Juice Shop already running."
 fi
 
-# Start httpbin (:8080) via gunicorn, managed by pm2
-if ! pm2 list | grep -q "httpbin"; then
-  pm2 start "bash -lc 'python3 -m gunicorn httpbin:app -b 0.0.0.0:8080 --workers 2'" --name httpbin
+# --- Start httpbin on :8080 ---
+if ! pgrep -f "gunicorn httpbin:app -b 0.0.0.0:8080" >/dev/null 2>&1; then
+  echo "[start-services] Starting httpbin..."
+  nohup bash -lc "python3 -m gunicorn httpbin:app -b 0.0.0.0:8080 --workers 2" >"$LOG/httpbin.out" 2>&1 &
+else
+  echo "[start-services] httpbin already running."
 fi
 
-# Minimal Samba config on unprivileged port 1445
-SMB_ROOT="$WORKDIR/.smb"
-mkdir -p "$SMB_ROOT"/{cache,logs,lib,run}
-cat > "$SMB_ROOT/smb.conf" <<'CONF'
+# --- Samba config on :1445 (unprivileged) ---
+cat > "$SMB_DIR/smb.conf" <<CONF
 [global]
    workgroup = WORKGROUP
    server role = standalone server
    map to guest = Bad User
    logging = file
-   log file = /workspaces/*/.smb/logs/smbd.log
+   log file = $SMB_DIR/logs/smbd.log
    max log size = 50
    smb ports = 1445
 
 [public]
-   path = /workspaces/*/shares/public
+   path = $WS/shares/public
    browseable = yes
    read only = yes
    guest ok = yes
 CONF
 
-# Replace wildcard path with actual workspace path
-sed -i "s#/workspaces/*#$WORKDIR#g" "$SMB_ROOT/smb.conf"
-
-# Start smbd in foreground on port 1445, managed by pm2
-if ! pm2 list | grep -q "smbd"; then
-  pm2 start "bash -lc 'smbd --foreground --no-process-group --debug-stdout --configfile=$SMB_ROOT/smb.conf --piddir=$SMB_ROOT/run --cachedir=$SMB_ROOT/cache --state-directory=$SMB_ROOT/lib --lock-directory=$SMB_ROOT/lib'" --name smbd
+# Start smbd on 1445 if not running
+if ! ss -ltn | awk '{print $4}' | grep -q ':1445$'; then
+  echo "[start-services] Starting smbd on 1445..."
+  nohup bash -lc "smbd --foreground --no-process-group --configfile=$SMB_DIR/smb.conf --piddir=$SMB_DIR/run --cachedir=$SMB_DIR/cache --state-directory=$SMB_DIR/lib --lock-directory=$SMB_DIR/lib" >"$LOG/smbd.out" 2>&1 &
+else
+  echo "[start-services] smbd appears to be listening on 1445."
 fi
 
-# Persist pm2 process list
-pm2 save >/dev/null 2>&1 || true
-
-echo "Services up: Juice Shop :3000, httpbin :8080, SMB :1445"
+echo "[start-services] Launched. Logs in $LOG/"
