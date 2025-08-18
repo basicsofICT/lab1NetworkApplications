@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start lab services without Docker (SMB removed):
+# Start lab services:
 #  - HTTP :3000 (python http.server)
 #  - HTTP :8080 (python http.server)
 # Requires: python3, curl, netcat-traditional (installed in postCreateCommand)
