@@ -54,7 +54,7 @@ Everything runs in your **GitHub Codespace**, with tools pre-installed and two l
 - **HTTP on 8080**
     - Another instance of http.server.
 
-## Lab Tasks (Total: 15 Points)
+## Lab Tasks (Total: 10 Points)
 
 It’s important that all the scripts in the scripts/ folder are executable, otherwise you won’t be able to run them directly.
 
@@ -65,7 +65,7 @@ chmod +x scripts/*.sh
 ```
 
 
-### 1) Footprinting a Domain: recon_dns.sh (4 pts)
+### 1) Footprinting a Domain: recon_dns.sh (2 pts)
 **Goal: Identify registrant info (WHOIS), name servers, A/AAAA records.**
 
 ```bash
@@ -79,7 +79,7 @@ chmod +x scripts/*.sh
 
 
 
-### 2) Network Scanning – scan_web.sh (6 pts)
+### 2) Network Scanning – scan_web.sh (3 pts)
 **Goal: Identify open ports/services and probe HTTP(S).**
 
 ```bash
@@ -93,7 +93,7 @@ sudo ./scripts/scan_web.sh <target-host-or-ip>
 
 - ***Deliverable: A table like Port | Service and a brief explanation of what that means for an attacker/defender.***
 
-### 3) Web Vulnerability Scanning (basic) (5 pts)
+### 3) Web Vulnerability Scanning (basic) (3 pts)
 **Goal: Perform a light nikto scan against an authorized test web app.**
 
 ```bash

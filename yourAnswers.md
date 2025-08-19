@@ -71,7 +71,7 @@ Write 1–2 sentences about what these results show and why running a web vulner
 
 
 
-## Submit your work
+## Submit your work - 2 Points
 
 1. Commit and push your changes:
    ```bash
