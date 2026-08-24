@@ -27,6 +27,9 @@ Commands used:
 
 
 
+Copy values from `artifacts/recon.txt` after `./scripts/recon_dns.sh example.com`.
+Use **example.com only**. WHOIS should mention IANA. Cloudflare NS records are normal for this domain.
+
 WHOIS:
 
 
@@ -43,10 +46,6 @@ AAAA record:
 
 
 
-Footprinting summary:
-
-
-
 ---
 
 ## Task 2 — Network scanning — 2 points
@@ -55,7 +54,8 @@ Commands used:
 
 
 
-Fill **Service** (and Version if you have it). Do not delete the port numbers.
+Fill **Service** and **Version** from the curl `Server:` headers (http / InsecureLab/0.1 and CampusBot/0.1).
+Nmap may show `ppp` on 3000 and `http-proxy` on 8080 — that is a default name, not a failed scan. Do not delete the port numbers.
 
 | Port | Service | Version |
 |------|---------|---------|

@@ -65,7 +65,6 @@ FIELDS = [
     "NS records",
     "A record",
     "AAAA record",
-    "Footprinting summary",
     "Attacker/defender note",
     "WEB_FLAG",
     "Missing header 1",
@@ -165,7 +164,6 @@ def load_answers() -> dict[str, Any]:
             "ns": extract_field(md, "NS records"),
             "a": extract_field(md, "A record"),
             "aaaa": extract_field(md, "AAAA record"),
-            "summary": extract_field(md, "Footprinting summary"),
         },
         "scan": {
             "ports": [
@@ -208,26 +206,42 @@ def check_recon_artifact(_ans: dict[str, Any]) -> tuple[bool, str]:
     text = read_artifact("recon.txt")
     if not text.strip():
         return False, "Missing artifacts/recon.txt. Run ./scripts/recon_dns.sh example.com"
-    has_ns = bool(re.search(r"iana-servers\.net", text, re.I))
+    is_example = bool(re.search(r"example\.com", text, re.I))
+    is_iana = bool(
+        re.search(
+            r"Internet Assigned Numbers Authority|RESERVED-Internet Assigned Numbers Authority|whois\.iana\.org",
+            text,
+            re.I,
+        )
+    )
+    has_ns = bool(re.search(r"\sIN\s+NS\s+", text)) or bool(re.search(r"Name Server:", text, re.I))
     has_a = bool(re.search(r"\sIN\s+A\s+", text)) or bool(re.search(r"\sIN\s+AAAA\s+", text))
-    if has_ns and has_a:
-        return True, "Recon artifact contains example.com NS and A/AAAA records."
-    return False, "artifacts/recon.txt must include NS (iana-servers.net) and A or AAAA records."
+    if is_example and is_iana and has_ns and has_a:
+        return True, "Recon artifact contains example.com WHOIS (IANA) plus NS and A/AAAA records."
+    missing = []
+    if not is_example:
+        missing.append("example.com")
+    if not is_iana:
+        missing.append("IANA WHOIS (Internet Assigned Numbers Authority)")
+    if not has_ns:
+        missing.append("NS records")
+    if not has_a:
+        missing.append("A or AAAA records")
+    return False, "artifacts/recon.txt is missing: " + ", ".join(missing) + ". Run ./scripts/recon_dns.sh example.com"
 
 
 def check_recon_answers(ans: dict[str, Any]) -> tuple[bool, str]:
     recon = ans.get("recon") or {}
-    ok = all(
-        [
-            nonempty(recon.get("whois"), 8),
-            nonempty(recon.get("ns"), 4),
-            nonempty(recon.get("a"), 4) or nonempty(recon.get("aaaa"), 4),
-            nonempty(recon.get("summary"), 40),
-        ]
-    )
-    if ok:
-        return True, "Footprinting answers in yourAnswers.md are filled in."
-    return False, "Fill WHOIS, NS records, A or AAAA, and a Footprinting summary (40+ characters)."
+    problems = []
+    if not nonempty(recon.get("whois"), 8):
+        problems.append("WHOIS is too short (copy a few lines from the whois output, not only the domain name)")
+    if not nonempty(recon.get("ns"), 4):
+        problems.append("NS records are empty")
+    if not (nonempty(recon.get("a"), 4) or nonempty(recon.get("aaaa"), 4)):
+        problems.append("A or AAAA record is empty")
+    if problems:
+        return False, problems[0] if len(problems) == 1 else " | ".join(problems)
+    return True, "Footprinting answers in yourAnswers.md are filled in."
 
 
 def check_scan_artifact(_ans: dict[str, Any]) -> tuple[bool, str]:
@@ -361,7 +375,7 @@ def show_parsed(ans: dict[str, Any]) -> str:
         return "\n".join(lines) + "\n"
     lines.append(f"Ethics box checked: {ans.get('ethics_acknowledged')}")
     recon = ans.get("recon") or {}
-    for key in ("whois", "ns", "a", "aaaa", "summary"):
+    for key in ("whois", "ns", "a", "aaaa"):
         value = recon.get(key) or "(empty)"
         preview = value.replace("\n", " / ")
         if len(preview) > 80:

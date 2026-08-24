@@ -70,28 +70,57 @@ Do not edit `scripts/grade.py` or `lab/flags.py` to award yourself points. Instr
 ### 1) Footprinting a domain — 2 pts  
 **Goal:** WHOIS + DNS (NS, A/AAAA, MX, TXT). Use AI only to help interpret, then verify.
 
+**Assigned target:** `example.com` (IANA documentation domain). Do not substitute another website.
+
 ```bash
 ./scripts/recon_dns.sh example.com
 ```
 
-This writes `artifacts/recon.txt`.
+This writes `artifacts/recon.txt`. WHOIS should still show **IANA** as the organization/registrar. Nameservers may be **Cloudflare** (for example `elliott.ns.cloudflare.com`) — that is current `example.com`, not a wrong target.
 
-- Copy WHOIS / NS / A / AAAA into `yourAnswers.md` under those labels.
-- Write a **Footprinting summary** of at least 40 characters (what the records reveal).
-- Optional: paste the output into Copilot Chat and ask it to list attack-surface clues; say in your summary whether you confirmed the AI’s claims.
+- Copy WHOIS / NS / A / AAAA from that file into `yourAnswers.md` under those labels.
+  - **WHOIS:** a few lines from the whois output (organization/registrar), not only `EXAMPLE.COM`.
 
 
 ### 2) Network scanning — 2 pts  
-**Goal:** Find open ports and services on the lab host only.
+**Goal:** Find open ports and services on the lab host only (`127.0.0.1`).
 
 ```bash
 ./scripts/scan_web.sh 127.0.0.1
 ```
 
-This writes `artifacts/scan.txt`.
+This writes `artifacts/scan.txt`. You should see **3000** and **8080** as **open**. Closed ports (22, 80, 443, …) are normal in this Codespace.
 
-- In the port table, fill **Service** (and Version if nmap shows it) for **3000** and **8080**.
-- Write **Attacker/defender note** (40+ characters).
+**Nmap looking “wrong” is expected — not a failed scan.**
+
+Nmap first labels a port from its built-in list (IANA names), not from what is actually speaking:
+
+| Port | nmap default name | What is really running in this lab |
+|------|-------------------|-------------------------------------|
+| 3000 | `ppp` | HTTP campus portal (`Server: InsecureLab/0.1`) |
+| 8080 | `http-proxy` | HTTP CampusBot (`Server: CampusBot/0.1`) |
+
+The long `SF-Port3000-TCP:...` / “unrecognized despite returning data” block is nmap saying *“I got HTTP, but this is not a fingerprint I know.”* You do **not** submit that to nmap.org. Ignore the fingerprint dump.
+
+**What to copy into `yourAnswers.md`**
+
+Use the **Quick HTTP head checks** at the bottom of the script output (`curl -I`), not the nmap `ppp` / `http-proxy` labels.
+
+Example (your dates/lengths may differ):
+
+```
+Server: InsecureLab/0.1     → port 3000
+Server: CampusBot/0.1       → port 8080
+```
+
+In the port table in `yourAnswers.md`, fill **Service** and **Version**. Do not delete the port numbers:
+
+| Port | Service | Version |
+|------|---------|---------|
+| 3000 | http | InsecureLab/0.1 |
+| 8080 | http | CampusBot/0.1 |
+
+- Write **Attacker/defender note** (40+ characters): e.g. what two open HTTP services mean for an attacker (more attack surface) and a defender (restrict ports, identify banners, don’t expose lab/dev servers).
 
 ### 3) Web enumeration + vulnerability scan — 3 pts  
 **Goal:** Enumerate the portal, find a hidden note, and review missing security headers (Nikto).
