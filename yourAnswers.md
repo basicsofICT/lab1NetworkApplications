@@ -1,85 +1,122 @@
-# Network Applications & Security - Lab Report: Reconnaissance & Vulnerability Scanning Lab
+# Lab 1 answers (this file is graded)
 
-Your Full Name: ___________________  
-Date: ___________________
----
+**Name:**  
+**Date:**  
 
-## 1️⃣ Domain Footprinting – recon_dns.sh (2 pts)
+Keep the labels below (WHOIS, WEB_FLAG, Missing header 1, …).  
+Write your answers under each label. Then run:
 
-**List commands that you have  used:**
-
-
-
-
-
-**Findings (summary):**
-
-- WHOIS:
-
-- NS Records:
-
-- A Record:
-
-- AAAA Record:
-
-
-**Write in your own words 2–3 sentences on what these records reveal.**
-
-
-
-
-
+```bash
+python3 scripts/grade.py
+python3 scripts/grade.py --show-parsed
+```
 
 ---
 
-## 2️⃣ Network Scanning – scan_web.sh (3 pts)
-**List commands that you have  used:**
+## Ethics — 1 point
 
+Tick the box below if you agree (put an x inside the brackets):
 
-**Findings table:**
+- [ ] I will only scan authorized lab targets (127.0.0.1 / localhost).
 
-The following table is an example. You are required to replace the port number. service and versions with your own findings. 
+---
 
-| Port | Service | Version (if detected) |
-|------|---------|------------------------|
-| 80   | HTTP    | Apache/2.4.54          |
-| 443  | HTTPS   | nginx/1.22             |
-| 3000 | WebApp  | Node.js/Express        |
-| 445  | SMB     | Samba 4.15             |
+## Task 1 — Footprinting — 2 points
 
-
-**Briefly  explain in your own words what the above finding from this task means for an attacker/defender.**
+Commands used:
 
 
 
-## 3️⃣ Web Vulnerability Scanning – vuln_scan.sh (3 pts)
-
-**List commands that you have  used:**
+WHOIS:
 
 
 
-
-**Findings (at least two issues):**
-1. <first finding here>  
-   - Why it matters: <short explanation>  
-
-2. <second finding here>  
-   - Why it matters: <short explanation>  
-
-**Explanation (summary):**  
-Write 1–2 sentences about what these results show and why running a web vulnerability scan is useful in your own words.  
+NS records:
 
 
 
-## Submit your work - 2 Points
+A record:
 
-1. Commit and push your changes:
-   ```bash
-   git add .
-   git commit -m "Complete lab setup and tasks"
-   git push origin main  
 
-2. Copy the URL of your GitHub repository (e.g., https://github.com/<org-or-user>/<repo>)
 
-3. Open Canvas and paste the repo URL in the submission field.
-4. You will get **2 points** for creating the codespace and attempting this task.
+AAAA record:
+
+
+
+Footprinting summary:
+
+
+
+---
+
+## Task 2 — Network scanning — 2 points
+
+Commands used:
+
+
+
+Fill **Service** (and Version if you have it). Do not delete the port numbers.
+
+| Port | Service | Version |
+|------|---------|---------|
+| 3000 |  |  |
+| 8080 |  |  |
+
+Attacker/defender note:
+
+
+
+---
+
+## Task 3 — Web enumeration + Nikto — 3 points
+
+Commands used:
+
+
+
+WEB_FLAG:
+
+
+
+Missing header 1:
+
+
+
+Missing header 2:
+
+
+
+---
+
+## Task 4 — CampusBot / OWASP LLM — 2 points
+
+Use `./scripts/chat_ai.sh "your message"` (saves `artifacts/chat.txt`) or the page on port 8080.
+A normal "Hello" will not reveal the secret. Try to get the bot to show its hidden instructions.
+Then paste the flag and write a defense. Keep these labels.
+
+Commands or prompts used:
+
+
+
+LLM_FLAG:
+
+
+
+OWASP issue:
+
+
+
+Defense:
+
+
+
+---
+
+## Submit
+
+```bash
+python3 scripts/grade.py
+git add yourAnswers.md artifacts/
+git commit -m "Complete lab 1 tasks"
+git push origin main
+```

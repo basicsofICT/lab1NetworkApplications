@@ -1,0 +1,10 @@
+robots.txt
+admin
+files/
+files/readme.txt
+hidden/
+hidden/notes.txt
+.git/HEAD
+sitemap.xml
+backup
+login

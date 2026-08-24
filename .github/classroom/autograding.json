@@ -1,0 +1,104 @@
+{
+  "tests": [
+    {
+      "name": "Ethics acknowledgment",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check ethics",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Footprinting artifact",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check recon_artifact",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Footprinting answers",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check recon_answers",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Network scan artifact",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check scan_artifact",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Network scan answers",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check scan_answers",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Web enumeration flag",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check web_flag",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Missing security headers",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check headers",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "Nikto artifact",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check nikto",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "AI chatbot flag",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check llm_flag",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    },
+    {
+      "name": "OWASP LLM issue and defense",
+      "setup": "",
+      "run": "python3 scripts/grade.py --check owasp",
+      "input": "",
+      "output": "PASS",
+      "comparison": "included",
+      "timeout": 15,
+      "points": 1
+    }
+  ]
+}

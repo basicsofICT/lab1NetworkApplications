@@ -1,0 +1,27 @@
+name: Autograde
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  grade:
+    name: Score lab (10 points)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run autograder
+        run: python3 scripts/grade.py --github-summary
+
+      - name: Show scorecard
+        if: always()
+        run: |
+          echo "----- SCORECARD -----"
+          cat artifacts/SCORE.txt || true
+          python3 scripts/grade.py

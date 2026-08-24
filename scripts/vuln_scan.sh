@@ -12,5 +12,14 @@ if ! echo "$url" | grep -Eq '^https?://(127\.0\.0\.1|localhost|0\.0\.0\.0|::1)(:
   exit 2
 fi
 
-echo "== Nikto (light, local) =="
-nikto -host "$url" -Tuning x -timeout 5 -maxtime 5m -nolookup -ask no
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+mkdir -p "$ROOT/artifacts"
+out="$ROOT/artifacts/nikto.txt"
+
+{
+  echo "== Nikto (light, local) =="
+  nikto -host "$url" -Tuning x -timeout 5 -maxtime 5m -nolookup -ask no
+} | tee "$out"
+
+echo
+echo "[vuln_scan] Saved output to artifacts/nikto.txt"
