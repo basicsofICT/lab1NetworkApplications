@@ -125,7 +125,7 @@ def extract_field(md: str, label: str) -> str:
 
 def extract_flag(md: str, name: str) -> str:
     labeled = extract_field(md, name)
-    found = re.search(rf"{re.escape(name)}\{{[^}}]+\}}", labeled or md, re.I)
+    found = re.search(rf"{re.escape(name)}\{{[^}}]+\}}", labeled)
     return found.group(0).strip() if found else ""
 
 
@@ -140,6 +140,60 @@ def parse_ports(md: str) -> dict[int, dict[str, str]]:
         version = clean_value(m.group(3))
         found[int(m.group(1))] = {"service": service, "version": version}
     return found
+
+
+def task_section(md: str, number: int) -> str:
+    start = re.search(rf"(?im)^##\s+Task\s+{number}\b", md)
+    if not start:
+        return ""
+    rest = md[start.end() :]
+    nxt = re.search(r"(?im)^##\s+", rest)
+    return rest[: nxt.start()] if nxt else rest
+
+
+def extract_commands_block(section: str) -> str:
+    match = re.search(
+        r"(?im)^[ \t]*(?:\*{0,2})Commands(?: or prompts)? used(?:\*{0,2})?[ \t]*:?[ \t]*(.*)$",
+        section,
+    )
+    if not match:
+        return ""
+    after = match.group(1) or ""
+    rest = section[match.end() :]
+    stop = len(rest)
+    stop_labels = FIELDS + [
+        "Fill **Service",
+        "Fill Service",
+        "Copy WHOIS",
+        "Under **Commands",
+    ]
+    for label in stop_labels:
+        found = re.search(field_pattern(label) if label in FIELDS else rf"(?im)^[ \t]*{re.escape(label)}", rest)
+        if found:
+            stop = min(stop, found.start())
+    heading = re.search(r"(?m)^##\s+", rest)
+    if heading:
+        stop = min(stop, heading.start())
+    rule = re.search(r"(?m)^---\s*$", rest)
+    if rule:
+        stop = min(stop, rule.start())
+    table = re.search(r"(?m)^\s*\|[ \t]*Port[ \t]*\|", rest)
+    if table:
+        stop = min(stop, table.start())
+    return clean_value(after + "\n" + rest[:stop])
+
+
+def commands_blob(text: str) -> str:
+    return (text or "").lower().replace("`", "").replace('"', "'")
+
+
+def missing_command_parts(cmds: str, required: list[tuple[str, str]]) -> list[str]:
+    blob = commands_blob(cmds)
+    missing = []
+    for needle, label in required:
+        if needle.lower() not in blob:
+            missing.append(label)
+    return missing
 
 
 def load_answers() -> dict[str, Any]:
@@ -158,6 +212,12 @@ def load_answers() -> dict[str, Any]:
     ports = parse_ports(md)
     return {
         "ethics_acknowledged": ethics,
+        "commands": {
+            1: extract_commands_block(task_section(md, 1)),
+            2: extract_commands_block(task_section(md, 2)),
+            3: extract_commands_block(task_section(md, 3)),
+            4: extract_commands_block(task_section(md, 4)),
+        },
         "recon": {
             "whois": extract_field(md, "WHOIS"),
             "ns": extract_field(md, "NS records"),
@@ -231,6 +291,12 @@ def check_recon_artifact(_ans: dict[str, Any]) -> tuple[bool, str]:
 def check_recon_answers(ans: dict[str, Any]) -> tuple[bool, str]:
     recon = ans.get("recon") or {}
     problems = []
+    cmd_miss = missing_command_parts(
+        str((ans.get("commands") or {}).get(1) or ""),
+        [("recon_dns.sh", "./scripts/recon_dns.sh"), ("example.com", "example.com")],
+    )
+    if cmd_miss:
+        problems.append("Task 1 Commands used must include " + " and ".join(cmd_miss))
     if not nonempty(recon.get("whois"), 8):
         problems.append("WHOIS is too short (copy a few lines from the whois output, not only the domain name)")
     if not nonempty(recon.get("ns"), 4):
@@ -239,7 +305,7 @@ def check_recon_answers(ans: dict[str, Any]) -> tuple[bool, str]:
         problems.append("A or AAAA record is empty")
     if problems:
         return False, problems[0] if len(problems) == 1 else " | ".join(problems)
-    return True, "Footprinting answers in yourAnswers.md are filled in."
+    return True, "Footprinting answers and required command are present."
 
 
 def check_scan_artifact(_ans: dict[str, Any]) -> tuple[bool, str]:
@@ -253,6 +319,24 @@ def check_scan_artifact(_ans: dict[str, Any]) -> tuple[bool, str]:
     return False, "artifacts/scan.txt must show ports 3000 and 8080."
 
 
+def is_http_service(service: str) -> bool:
+    text = (service or "").strip().lower()
+    if not text or is_placeholder(text):
+        return False
+    compact = re.sub(r"[^a-z0-9]+", "", text)
+    if compact in {"ppp", "httpproxy", "http-proxy".replace("-", "")}:
+        return False
+    if compact in {"http", "https", "httpd", "http10", "http11"}:
+        return True
+    return bool(re.match(r"^https?(?:10|11)?$", compact))
+
+
+def version_matches(version: str, expected: str) -> bool:
+    got = re.sub(r"\s+", "", (version or "").lower())
+    need = re.sub(r"\s+", "", expected.lower())
+    return bool(got) and need in got
+
+
 def check_scan_answers(ans: dict[str, Any]) -> tuple[bool, str]:
     scan = ans.get("scan") or {}
     by_port = {}
@@ -263,23 +347,69 @@ def check_scan_answers(ans: dict[str, Any]) -> tuple[bool, str]:
             continue
     p3000 = by_port.get(3000) or {}
     p8080 = by_port.get(8080) or {}
-    services_ok = nonempty(p3000.get("service"), 2) and nonempty(p8080.get("service"), 2)
-    if services_ok:
-        return True, "Port table has services for 3000 and 8080."
-    return False, "In the port table, fill Service for 3000 and 8080."
+    problems = []
+    if not is_http_service(str(p3000.get("service") or "")):
+        problems.append("Port 3000 Service must be http (from curl), not a random name or nmap's ppp")
+    if not version_matches(str(p3000.get("version") or ""), "InsecureLab/0.1"):
+        problems.append("Port 3000 Version must match the curl Server header (InsecureLab/0.1)")
+    if not is_http_service(str(p8080.get("service") or "")):
+        problems.append("Port 8080 Service must be http (from curl), not a random name or nmap's http-proxy")
+    if not version_matches(str(p8080.get("version") or ""), "CampusBot/0.1"):
+        problems.append("Port 8080 Version must match the curl Server header (CampusBot/0.1)")
+    cmd_miss = missing_command_parts(
+        str((ans.get("commands") or {}).get(2) or ""),
+        [("scan_web.sh", "./scripts/scan_web.sh"), ("127.0.0.1", "127.0.0.1")],
+    )
+    if cmd_miss:
+        problems.append("Task 2 Commands used must include " + " and ".join(cmd_miss))
+    if problems:
+        return False, " | ".join(problems)
+    return True, "Port table Service/Version match the lab HTTP banners."
+
+
+def student_wordlist_extras() -> int:
+    path = ROOT / "lab" / "wordlist.txt"
+    if not path.exists():
+        return 0
+    text = path.read_text(encoding="utf-8", errors="replace")
+    marker = re.search(r"(?im)^#\s*STUDENT_PATHS\b", text)
+    if not marker:
+        return 0
+    tail = text[marker.end() :]
+    count = 0
+    for line in tail.splitlines():
+        item = line.strip()
+        if not item or item.startswith("#"):
+            continue
+        count += 1
+    return count
 
 
 def check_web_flag(ans: dict[str, Any]) -> tuple[bool, str]:
+    cmd_miss = missing_command_parts(
+        str((ans.get("commands") or {}).get(3) or ""),
+        [("enum_web.sh", "./scripts/enum_web.sh")],
+    )
+    if cmd_miss:
+        return False, "Task 3 Commands used must include " + " and ".join(cmd_miss)
     flag = str((ans.get("web") or {}).get("web_flag") or "")
     if sha256_text(flag) != WEB_FLAG_SHA256:
         return False, "WEB_FLAG in yourAnswers.md is missing or incorrect."
     evidence = read_artifact("enum.txt")
     if "WEB_FLAG{" not in evidence and "/hidden/" not in evidence:
         return False, "Put the enumeration output in artifacts/enum.txt (run ./scripts/enum_web.sh)."
+    extras = student_wordlist_extras()
+    if extras < 3:
+        return False, "Add at least 3 extra paths under STUDENT_PATHS in lab/wordlist.txt, then re-run enum_web.sh."
     return True, "Web flag is correct and enumeration evidence is present."
 
 
 def check_headers(ans: dict[str, Any]) -> tuple[bool, str]:
+    cmds = str((ans.get("commands") or {}).get(3) or "")
+    has_curl = not missing_command_parts(cmds, [("curl", "curl")])
+    has_vuln = not missing_command_parts(cmds, [("vuln_scan.sh", "./scripts/vuln_scan.sh")])
+    if not (has_curl or has_vuln):
+        return False, "Task 3 Commands used must include curl or ./scripts/vuln_scan.sh"
     headers = (ans.get("web") or {}).get("missing_headers") or []
     named = {str(h).strip().lower() for h in headers}
     matches = [h for h in EXPECTED_HEADERS if h in named]
@@ -288,7 +418,13 @@ def check_headers(ans: dict[str, Any]) -> tuple[bool, str]:
     return False, "Fill Missing header 1 and 2 in yourAnswers.md (two different security header names)."
 
 
-def check_nikto(_ans: dict[str, Any]) -> tuple[bool, str]:
+def check_nikto(ans: dict[str, Any]) -> tuple[bool, str]:
+    cmd_miss = missing_command_parts(
+        str((ans.get("commands") or {}).get(3) or ""),
+        [("vuln_scan.sh", "./scripts/vuln_scan.sh")],
+    )
+    if cmd_miss:
+        return False, "Task 3 Commands used must include " + " and ".join(cmd_miss)
     text = read_artifact("nikto.txt", "nikto-3000.txt", "vuln.txt")
     if not text.strip():
         return False, "Missing artifacts/nikto.txt. Run ./scripts/vuln_scan.sh http://127.0.0.1:3000"
@@ -298,6 +434,12 @@ def check_nikto(_ans: dict[str, Any]) -> tuple[bool, str]:
 
 
 def check_llm_flag(ans: dict[str, Any]) -> tuple[bool, str]:
+    cmd_miss = missing_command_parts(
+        str((ans.get("commands") or {}).get(4) or ""),
+        [("chat_ai.sh", "./scripts/chat_ai.sh")],
+    )
+    if cmd_miss:
+        return False, "Task 4 Commands or prompts used must include " + " and ".join(cmd_miss)
     flag = str((ans.get("ai") or {}).get("llm_flag") or "")
     if sha256_text(flag) != LLM_FLAG_SHA256:
         return False, "LLM_FLAG in yourAnswers.md is missing or incorrect."
@@ -372,6 +514,12 @@ def show_parsed(ans: dict[str, Any]) -> str:
         lines.append(f"ERROR: {ans['_error']}")
         return "\n".join(lines) + "\n"
     lines.append(f"Ethics box checked: {ans.get('ethics_acknowledged')}")
+    cmds = ans.get("commands") or {}
+    for n in (1, 2, 3, 4):
+        preview = (cmds.get(n) or "(empty)").replace("\n", " / ")
+        if len(preview) > 80:
+            preview = preview[:77] + "..."
+        lines.append(f"  task {n} commands: {preview}")
     recon = ans.get("recon") or {}
     for key in ("whois", "ns", "a", "aaaa"):
         value = recon.get(key) or "(empty)"
