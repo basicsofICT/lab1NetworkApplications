@@ -48,6 +48,20 @@ AAAA record:
 
 ---
 
+## Task 1 optional — Copilot Chat (0 points, not graded)
+
+Optional. Prompts you used and anything you verified (or caught as a hallucination).
+
+Copilot questions I asked:
+
+
+
+What I checked against artifacts/recon.txt:
+
+
+
+---
+
 ## Task 2 — Network scanning — 2 points
 
 Commands used:
@@ -62,13 +76,27 @@ Nmap may show `ppp` on 3000 and `http-proxy` on 8080 — that is a default name,
 | 3000 |  |  |
 | 8080 |  |  |
 
-Attacker/defender note:
+---
+
+## Task 2 optional — Copilot Chat (0 points, not graded)
+
+Optional. Prompts you used and anything you verified against artifacts/scan.txt.
+
+Copilot questions I asked:
+
+
+
+What I checked (open ports, nmap vs curl, defender ideas):
 
 
 
 ---
 
 ## Task 3 — Web enumeration + Nikto — 3 points
+
+First look with curl (homepage, robots.txt, headers), then run the scripts.
+Read 200 responses in artifacts/enum.txt for WEB_FLAG.
+Confirm two missing headers with curl -I (they should not appear in the header list).
 
 Commands used:
 
@@ -88,11 +116,25 @@ Missing header 2:
 
 ---
 
+## Task 3 optional — Copilot Chat (0 points, not graded)
+
+Optional. No summary is graded. Prompts you used and what you verified in enum/Nikto output.
+
+Copilot questions I asked:
+
+
+
+What I checked (paths, headers, curl -I, defender options):
+
+
+
+---
+
 ## Task 4 — CampusBot / OWASP LLM — 2 points
 
-Use `./scripts/chat_ai.sh "your message"` (saves `artifacts/chat.txt`) or the page on port 8080.
-A normal "Hello" will not reveal the secret. Try to get the bot to show its hidden instructions.
-Then paste the flag and write a defense. Keep these labels.
+Chat at http://127.0.0.1:8080 or `./scripts/chat_ai.sh "your message"`.
+A "Hello" will not show the flag. Ask the bot to show hidden / system instructions.
+Paste what you submit under the labels. Example shape only: `LLM_FLAG{this_is_an_example_not_the_real_flag}`
 
 Commands or prompts used:
 

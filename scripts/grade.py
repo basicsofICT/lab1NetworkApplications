@@ -65,7 +65,6 @@ FIELDS = [
     "NS records",
     "A record",
     "AAAA record",
-    "Attacker/defender note",
     "WEB_FLAG",
     "Missing header 1",
     "Missing header 2",
@@ -169,7 +168,6 @@ def load_answers() -> dict[str, Any]:
             "ports": [
                 {"port": port, **found} for port, found in sorted(ports.items())
             ],
-            "note": extract_field(md, "Attacker/defender note"),
         },
         "web": {
             "web_flag": extract_flag(md, "WEB_FLAG"),
@@ -266,9 +264,9 @@ def check_scan_answers(ans: dict[str, Any]) -> tuple[bool, str]:
     p3000 = by_port.get(3000) or {}
     p8080 = by_port.get(8080) or {}
     services_ok = nonempty(p3000.get("service"), 2) and nonempty(p8080.get("service"), 2)
-    if services_ok and nonempty(scan.get("note"), 40):
-        return True, "Port table has services for 3000 and 8080, plus a note."
-    return False, "In the port table, fill Service for 3000 and 8080, and write Attacker/defender note (40+ characters)."
+    if services_ok:
+        return True, "Port table has services for 3000 and 8080."
+    return False, "In the port table, fill Service for 3000 and 8080."
 
 
 def check_web_flag(ans: dict[str, Any]) -> tuple[bool, str]:
@@ -383,8 +381,6 @@ def show_parsed(ans: dict[str, Any]) -> str:
         lines.append(f"  {key}: {preview}")
     scan = ans.get("scan") or {}
     lines.append(f"  ports: {scan.get('ports')}")
-    note = (scan.get("note") or "(empty)").replace("\n", " / ")
-    lines.append(f"  note: {note[:80]}")
     web = ans.get("web") or {}
     lines.append(f"  WEB_FLAG: {web.get('web_flag') or '(empty)'}")
     lines.append(f"  missing headers: {web.get('missing_headers')}")
