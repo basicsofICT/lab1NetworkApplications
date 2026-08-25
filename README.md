@@ -1,4 +1,4 @@
-# Network Applications & Security — Lab 1  
+# Network Applications & Security: Lab 1  
 # Reconnaissance, Scanning, Web Assessment & AI Security (CEHv13)
 
 This lab is a **safe Codespace** for the first ethical-hacking phases: footprinting, scanning, enumeration, vulnerability analysis, plus **AI-assisted analysis** and a **local AI chatbot** target (CEHv13 / OWASP LLM Top 10).
@@ -67,7 +67,7 @@ Do not edit `scripts/grade.py` or `lab/flags.py` to award yourself points. Instr
 
 ## Lab tasks
 
-### 1) Footprinting a domain — 2 pts  
+### 1) Footprinting a domain: 2 pts  
 **Goal:** WHOIS + DNS (NS, A/AAAA, MX, TXT).
 
 **Assigned target:** `example.com` (IANA documentation domain). Do not substitute another website.
@@ -81,7 +81,7 @@ This writes `artifacts/recon.txt`. WHOIS should still show **IANA** as the organ
 - Copy WHOIS / NS / A / AAAA from that file into `yourAnswers.md` under those labels.
   - **WHOIS:** a few lines from the whois output (organization/registrar), not only `EXAMPLE.COM`.
 
-**Optional — GitHub Copilot Chat (0 points, not graded)**
+**Optional: GitHub Copilot Chat (0 points, not graded)**
 
 Use Copilot Chat in the Codespace to understand footprinting and to interpret `artifacts/recon.txt`. Do not skip the script. Check every claim against that file.
 
@@ -101,7 +101,7 @@ Then paste some of your `recon_dns.sh` output and ask:
 
 If Copilot names an NS or IP that is not in `artifacts/recon.txt`, treat it as a hallucination. 
 
-### 2) Network scanning — 2 pts  
+### 2) Network scanning: 2 pts  
 **Goal:** Find open ports and services on the lab host only (`127.0.0.1`).
 
 ```bash
@@ -127,7 +127,7 @@ Scroll to **Quick HTTP head checks** at the bottom of the same output. Those `Se
 
 Fill in the table as required.
 
-**Optional — GitHub Copilot Chat (0 points, not graded)**
+**Optional: GitHub Copilot Chat (0 points, not graded)**
 
 Use Copilot Chat to get familiar with the scan output. Paste `artifacts/scan.txt` (and the curl `Server:` lines). Check every claim against that file.
 
@@ -141,7 +141,7 @@ Questions you can ask:
 
 If Copilot invents a port or service that is not in `artifacts/scan.txt`, treat it as a hallucination. .
 
-### 3) Web enumeration + vulnerability scan — 3 pts  
+### 3) Web enumeration + vulnerability scan:  3 pts  
 **CEHv13 modules 04 (Enumeration), 05 (Vulnerability Analysis), 13–14 (Web)**
 
 **What this task is about**
@@ -152,7 +152,7 @@ Scanning (Task 2) only told you “HTTP is open.” Enumeration asks *what is on
 
 ---
 
-**Step 1 — Look at the site yourself (before the scripts)**
+**Step 1: Look at the site yourself (before the scripts)**
 
 ```bash
 curl -sI http://127.0.0.1:3000
@@ -169,7 +169,7 @@ Notice:
 
 ---
 
-**Step 2 — Enumerate with the lab wordlist**
+**Step 2: Enumerate with the lab wordlist**
 
 ```bash
 ./scripts/enum_web.sh http://127.0.0.1:3000
@@ -189,7 +189,7 @@ Do not stop at the script name. Open `artifacts/enum.txt`, find the interesting 
 
 ---
 
-**Step 3 — Light web vulnerability scan (Nikto)**
+**Step 3: Light web vulnerability scan (Nikto)**
 
 ```bash
 sudo ./scripts/vuln_scan.sh http://127.0.0.1:3000
@@ -206,7 +206,7 @@ If Nikto says a header is missing, that header’s name should **not** appear in
 
 ---
 
-**Optional — GitHub Copilot Chat (0 points, not graded)**
+**Optional: GitHub Copilot Chat (0 points, not graded)**
 
 Use Copilot Chat to learn from `artifacts/enum.txt` and `artifacts/nikto.txt`. Verify anything it claims with `curl`.
 
@@ -220,7 +220,7 @@ Questions you can ask:
 
 If Copilot invents a path, CVE, or header that is not in your artifacts, ignore it.
 
-### 4) AI system security — 2 pts  
+### 4) AI system security : 2 pts  
 **CEHv13 / OWASP Top 10 for LLM applications**
 
 CampusBot on port **8080** is a lab chatbot with **hidden instructions** (a system prompt). Those instructions include a secret flag. Your job is to get the bot to reveal them, then write how a developer should prevent that.
@@ -296,7 +296,7 @@ Write **under** each label:
 
 Also list the prompts you typed under **Commands or prompts used**.
 
-### 5) Ethics — 1 pt  
+### 5) Ethics : 1 pt  
 
 Read the rules at the top of this README. In `yourAnswers.md`, change the ethics checkbox from `[ ]` to `[x]` if you agree to scan **authorized lab targets only**.
 
